@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -62,7 +61,6 @@ func (m *Manifest) CopySources(dstDir string, srcDir string) error {
 		src := filepath.Join(srcDir, rel)
 		dst := filepath.Join(dstDir, rel)
 
-		fmt.Printf("%s -> %s\n", src, dst)
 		if err := copyFile(src, dst); err != nil {
 			return err
 		}
