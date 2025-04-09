@@ -42,6 +42,8 @@ func rootCmd() *cobra.Command {
 
 	flags.Register(cmd.PersistentFlags())
 
+	cmd.AddCommand(clearCacheCmd(&flags))
+
 	return cmd
 }
 
