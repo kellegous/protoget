@@ -15,11 +15,15 @@ func (d Dep) URL() string {
 	return fmt.Sprintf("git@github.com:%s.git", d.path)
 }
 
+func (d Dep) Ref() string {
+	return d.ref
+}
+
 func (d Dep) Path() string {
 	return filepath.Join(d.path, d.ref)
 }
 
-func parseDep(s string) (Dep, error) {
+func ParseDep(s string) (Dep, error) {
 	parts := strings.SplitN(s, "@", 2)
 
 	if len(parts) != 2 {

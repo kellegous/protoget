@@ -1,15 +1,14 @@
-package internal
+package cmd
 
 import (
-	"context"
+	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/kellegous/poop"
+	"github.com/kellegous/protoget/internal"
+	"github.com/kellegous/protoget/internal/store"
 	"github.com/spf13/cobra"
 )
-
-const manifest = "protoget.yaml"
 
 func rootCmd() *cobra.Command {
 	var flags Flags
@@ -17,25 +16,23 @@ func rootCmd() *cobra.Command {
 		Use:  "protoget",
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			s, err := store.Open(flags.CacheDir)
+			if err != nil {
+				poop.HitFan(err)
+			}
+
 			for _, arg := range args {
-				dep, err := parseDep(arg)
+				dep, err := internal.ParseDep(arg)
 				if err != nil {
 					poop.HitFan(err)
 				}
 
-				path, err := CloneTo(context.Background(), &dep, flags.CacheDir)
+				b, err := s.Ensure(cmd.Context(), &dep)
 				if err != nil {
 					poop.HitFan(err)
 				}
 
-				manifest, err := ReadFile(filepath.Join(path, manifest))
-				if err != nil {
-					poop.HitFan(err)
-				}
-
-				if err := manifest.CopySources(flags.DestDir, path); err != nil {
-					poop.HitFan(err)
-				}
+				fmt.Println(b)
 			}
 		},
 	}

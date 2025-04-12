@@ -1,7 +1,7 @@
 package main
 
-import "github.com/kellegous/protoget/internal"
+import "github.com/kellegous/protoget/internal/cmd"
 
 func main() {
-	internal.Execute()
+	cmd.Execute()
 }
