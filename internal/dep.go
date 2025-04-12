@@ -23,6 +23,13 @@ func (d Dep) Path() string {
 	return filepath.Join(d.path, d.ref)
 }
 
+func (d Dep) WithRef(ref string) Dep {
+	return Dep{
+		path: d.path,
+		ref:  ref,
+	}
+}
+
 func ParseDep(s string) (Dep, error) {
 	parts := strings.SplitN(s, "@", 2)
 

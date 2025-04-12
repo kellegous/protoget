@@ -13,7 +13,7 @@ import (
 )
 
 type Bundle struct {
-	dep  *internal.Dep
+	dep  internal.Dep
 	path string
 }
 

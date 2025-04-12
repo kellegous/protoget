@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"os/exec"
@@ -26,7 +27,8 @@ func Open(root string) (*Store, error) {
 	return &Store{root: root}, nil
 }
 
-func (s *Store) Ensure(ctx context.Context, dep *internal.Dep) (*Bundle, error) {
+func (s *Store) Ensure(ctx context.Context, dep internal.Dep) (*Bundle, error) {
+	// this only applies if the ref is a hash
 	dst := filepath.Join(s.root, dep.Path())
 	if _, err := os.Stat(dst); err == nil {
 		return &Bundle{dep: dep, path: dst}, nil
@@ -38,8 +40,16 @@ func (s *Store) Ensure(ctx context.Context, dep *internal.Dep) (*Bundle, error) 
 	}
 	defer os.RemoveAll(dir)
 
-	if err := getCloneTo(ctx, dep, dir); err != nil {
+	sha, err := getCloneTo(ctx, dep, dir)
+	if err != nil {
 		return nil, poop.Chain(err)
+	}
+
+	// now that we have the hash, re-check if the bundle exists
+	dep = dep.WithRef(sha)
+	dst = filepath.Join(s.root, dep.Path())
+	if _, err := os.Stat(dst); err == nil {
+		return &Bundle{dep: dep, path: dst}, nil
 	}
 
 	mf, err := readManifestFile(filepath.Join(dir, ManifestFile))
@@ -62,30 +72,41 @@ func (s *Store) Ensure(ctx context.Context, dep *internal.Dep) (*Bundle, error) 
 
 func getCloneTo(
 	ctx context.Context,
-	dep *internal.Dep,
+	dep internal.Dep,
 	root string,
-) error {
+) (string, error) {
 	// init the repo
 	if err := exec.CommandContext(ctx, "git", "init", root).Run(); err != nil {
-		return poop.Chain(err)
+		return "", poop.Chain(err)
 	}
 
 	// add the remote
 	c := exec.CommandContext(ctx, "git", "remote", "add", "origin", dep.URL())
 	c.Dir = root
 	if err := c.Run(); err != nil {
-		return poop.Chain(err)
+		return "", poop.Chain(err)
 	}
 
 	// shallow fetch the ref
 	c = exec.CommandContext(ctx, "git", "fetch", "--depth", "1", "origin", dep.Ref())
 	c.Dir = root
 	if err := c.Run(); err != nil {
-		return poop.Chain(err)
+		return "", poop.Chain(err)
 	}
 
 	// checkout the ref
 	c = exec.CommandContext(ctx, "git", "checkout", "FETCH_HEAD")
 	c.Dir = root
-	return poop.Chain(c.Run())
+	if err := c.Run(); err != nil {
+		return "", poop.Chain(err)
+	}
+
+	c = exec.CommandContext(ctx, "git", "rev-parse", "HEAD")
+	c.Dir = root
+	out, err := c.Output()
+	if err != nil {
+		return "", poop.Chain(err)
+	}
+
+	return string(bytes.TrimSpace(out)), nil
 }

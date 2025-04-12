@@ -26,7 +26,7 @@ func rootCmd() *cobra.Command {
 					poop.HitFan(err)
 				}
 
-				b, err := s.Ensure(cmd.Context(), &dep)
+				b, err := s.Ensure(cmd.Context(), dep)
 				if err != nil {
 					poop.HitFan(err)
 				}
