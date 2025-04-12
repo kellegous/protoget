@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/kellegous/poop"
@@ -32,7 +31,9 @@ func rootCmd() *cobra.Command {
 					poop.HitFan(err)
 				}
 
-				fmt.Println(b)
+				if err := b.CloneTo(flags.DestDir); err != nil {
+					poop.HitFan(err)
+				}
 			}
 		},
 	}
