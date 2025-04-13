@@ -3,7 +3,7 @@ module github.com/kellegous/protoget
 go 1.24.2
 
 require (
-	github.com/kellegous/poop v0.4.0
+	github.com/kellegous/poop v0.5.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	gopkg.in/yaml.v3 v3.0.1
