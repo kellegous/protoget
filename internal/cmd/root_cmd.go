@@ -4,9 +4,10 @@ import (
 	"os"
 
 	"github.com/kellegous/poop"
+	"github.com/spf13/cobra"
+
 	"github.com/kellegous/protoget/internal"
 	"github.com/kellegous/protoget/internal/store"
-	"github.com/spf13/cobra"
 )
 
 func rootCmd() *cobra.Command {
@@ -26,7 +27,7 @@ func rootCmd() *cobra.Command {
 					poop.HitFan(err)
 				}
 
-				b, err := s.Ensure(cmd.Context(), dep)
+				b, err := s.Ensure(cmd.Context(), dep, flags.GitAuth)
 				if err != nil {
 					poop.HitFan(err)
 				}

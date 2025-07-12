@@ -11,8 +11,11 @@ type Dep struct {
 	ref  string
 }
 
-func (d Dep) URL() string {
-	return fmt.Sprintf("git@github.com:%s.git", d.path)
+func (d Dep) URL(token string) string {
+	if token != "" {
+		return fmt.Sprintf("https://%s@github.com/%s.git", token, d.path)
+	}
+	return fmt.Sprintf("https://github.com/%s.git", d.path)
 }
 
 func (d Dep) Ref() string {

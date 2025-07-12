@@ -10,6 +10,7 @@ import (
 type Flags struct {
 	CacheDir string
 	DestDir  string
+	GitAuth  string
 }
 
 func (f *Flags) Register(s *pflag.FlagSet) {
@@ -24,6 +25,13 @@ func (f *Flags) Register(s *pflag.FlagSet) {
 		"destination-directory",
 		"./external",
 		"destination directory")
+
+	s.StringVar(
+		&f.GitAuth,
+		"git-auth",
+		"",
+		"git auth token (user:GITHUB_TOKEN)",
+	)
 }
 
 func mustHaveDefaultCacheDir() string {

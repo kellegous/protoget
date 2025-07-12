@@ -27,7 +27,11 @@ func Open(root string) (*Store, error) {
 	return &Store{root: root}, nil
 }
 
-func (s *Store) Ensure(ctx context.Context, dep internal.Dep) (*Bundle, error) {
+func (s *Store) Ensure(
+	ctx context.Context,
+	dep internal.Dep,
+	token string,
+) (*Bundle, error) {
 	// this only applies if the ref is a hash
 	dst := filepath.Join(s.root, dep.Path())
 	if _, err := os.Stat(dst); err == nil {
@@ -40,7 +44,7 @@ func (s *Store) Ensure(ctx context.Context, dep internal.Dep) (*Bundle, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	sha, err := getCloneTo(ctx, dep, dir)
+	sha, err := gitCloneTo(ctx, dep, dir, token)
 	if err != nil {
 		return nil, poop.Chain(err)
 	}
@@ -70,10 +74,11 @@ func (s *Store) Ensure(ctx context.Context, dep internal.Dep) (*Bundle, error) {
 	return &Bundle{dep: dep, path: dst}, nil
 }
 
-func getCloneTo(
+func gitCloneTo(
 	ctx context.Context,
 	dep internal.Dep,
 	root string,
+	token string,
 ) (string, error) {
 	// init the repo
 	if err := exec.CommandContext(ctx, "git", "init", root).Run(); err != nil {
@@ -81,7 +86,7 @@ func getCloneTo(
 	}
 
 	// add the remote
-	c := exec.CommandContext(ctx, "git", "remote", "add", "origin", dep.URL())
+	c := exec.CommandContext(ctx, "git", "remote", "add", "origin", dep.URL(token))
 	c.Dir = root
 	if err := c.Run(); err != nil {
 		return "", poop.Chain(err)
